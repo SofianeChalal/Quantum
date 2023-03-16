@@ -31,25 +31,6 @@ def density_matrix(x,y,z):
     RHO = 0.5*RHO
     return(RHO)
 
-def purity(rho):
-    
-    purity = (rho*rho).tr()
-    return purity
-
-def concurrence(rho):
-    
-    concurrence = np.sqrt(2*(1 - (rho*rho).tr()))
-    return concurrence
-
-def lyapunov_energy(x,y,z):
-    energy =  1 - (x**2 + y**2 + z**2)
-    return energy
-
-
-
-
-
-
 '--------------------'
 sigx = qtp.sigmax()
 sigy = qtp.sigmay()
@@ -67,24 +48,18 @@ rho0 = density_matrix(1/4, -1/4, 0)
 rhoC = density_matrix(0,0,1)
 '------------------------------------------------'
 
-
-
 '-----------------------------------------------'
 xN = np.zeros((N,steps))
 yN = np.zeros((N,steps))
 zN = np.zeros((N,steps))
 Fidelity = np.zeros((N,steps))
-V_lyapunov = np.zeros((N,steps))
 '-----------------------------------------------'
-
-
 '-----------------------------------------'
 "Initialization "
 for n in range(N):
     xN[n][0] = (rho0*sigx).tr()
     yN[n][0] = (rho0*sigy).tr()
     zN[n][0] = (rho0*sigz).tr()
-    V_lyapunov[n][0] = lyapunov_energy(xN[n][0],yN[n][0],zN[n][0])
     Fidelity[n][0] = qtp.fidelity(rho0,rhoC)
 '-----------------------------------------'
 
@@ -114,7 +89,6 @@ def drift_decoherence(L,rho):
     return dL
 
 
-
 def U_control(direction : str, rho, rho_c, alpha : 7.61, beta : 5):
     i = 1j
     if (direction == 'x'):
@@ -127,12 +101,11 @@ def U_control(direction : str, rho, rho_c, alpha : 7.61, beta : 5):
     uc = -alpha*((i*((qtp.commutator(F,rho))*rho_c)).tr()) + beta*(1 - (rho*rho_c).tr())
     
     return uc
-
-    
+  
 def control(Hc,rho):
     u = U_control('x',rho,sigz,7.61,5)
     Hcu = -i*qtp.commutator(u*Hc,rho)
-    return 0
+    return Hcu
 
 
 def mf_inter(mx,my,mz,rho):
@@ -145,9 +118,6 @@ def diffusion_term(L,rho):
 
     return diffusion
 
-
-
-
 '---------------------------------------------------------------------------'
 
 for tt in range(steps-1):
@@ -159,7 +129,6 @@ for tt in range(steps-1):
         xN[n][tt+1] = (rho*sigx).tr()
         yN[n][tt+1] = (rho*sigy).tr()
         zN[n][tt+1] = (rho*sigz).tr()
-        V_lyapunov[n][tt+1] = lyapunov_energy(xN[n][tt+1],yN[n][tt+1],zN[n][tt+1])
         Fidelity[n][tt+1] = qtp.fidelity(rho,rhoC)
     '--------------------------------------'
     ax = 0
@@ -184,41 +153,7 @@ for tt in range(steps):
 Mean_Fidelity = Mean_Fidelity/N
         
         
-
-    
-'-----------------------------------------------------------------------'
-
-# X-direction of spin 
-
-# fig, axX =  plt.subplots(1,1,figsize=(16,8))
-# for n in range(0,N):
-#     axX.plot(Times, xN[n][:], lw = 0.5, color = 'darkgreen')
-# axX.plot(Times, mu_z, lw = 1, color = 'black')
-
-# plt.title("Evolution x", fontdict = font1)
-# plt.xlabel("Times", fontdict = font2)
-# plt.ylabel("Evolution", fontdict = font2)
-# plt.legend()
-# plt.grid()
-
-# Y-direction of spin 
-
-# fig, axY =  plt.subplots(1,1,figsize=(16,8))
-# for n in range(0,N):
-#     axY.plot(Times, yN[n][:], lw = 0.5, color = 'darkred')
-# axY.plot(Times, mu_y, lw =1, color = 'black')
-
-# plt.title("Evolution of y", fontdict = font1)
-# plt.xlabel("Times", fontdict = font2)
-# plt.ylabel("Evolution", fontdict = font2)
-# plt.legend()
-# plt.grid()
-
-
-
-'-------------------------------------------------'
 # Z-direction of spin 
-
 fig, axZ =  plt.subplots(1,1,figsize=(16,8))
 
 
@@ -235,23 +170,6 @@ plt.ylabel("Evolution", fontdict = font2)
 plt.legend()
 plt.grid()
 '----------------------------------------------------'
-
-
-
-'-------------------------------------------------------------------------'
-#Lyapunov-Energy function 
-
-# fig, axV = plt.subplots(1,1, figsize=(16,8))
-
-# for n in range(0,10):
-#     axV.plot(Times, V_lyapunov[n][:], lw = 0.6, color = 'red')
-# plt.title("Lyapunov Energy function", fontdict = font1)
-# plt.xlabel("Times", fontdict = font2)
-# plt.ylabel("Evolution", fontdict = font2)
-# plt.legend()
-# plt.grid()
-'-------------------------------------------------------------------------'
-
 
 '----------------------------------------------------------------------'
 # Fidelity function evolution
